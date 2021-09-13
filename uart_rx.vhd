@@ -31,7 +31,7 @@ signal data_buffer : std_Logic_vector(7 downto 0);
 signal discard_bit : std_logic := '0';
 
 
-signal fifo_clk : std_logic := '0';
+
 
 
 begin
@@ -59,28 +59,6 @@ begin
 		end if;
 	end process divclk;
 	
-	fifoclk : process(clock_in,reset_in)
-	begin
-		if reset_in = '1' then
-			counter <= 0;
-		elsif rising_edge(clock_in) then
-			counter <= counter + 1;
-			
-			if uart_rate_rx_sel = "00" and counter >= 5200 then
-				new_clk <= not new_clk;
-				counter <= 0;
-			elsif uart_rate_rx_sel = "01" and counter >= 2603 then
-				new_clk <= not new_clk;
-				counter <= 0;
-			elsif uart_rate_rx_sel = "10" and counter >= 1735 then
-				new_clk <= not new_clk;
-				counter <= 0;
-			elsif uart_rate_rx_sel = "11" and counter >= 867 then
-				new_clk <= not new_clk;
-				counter <= 0;
-			end if;
-		end if;
-	end process fifoclk;
 
 
 	
