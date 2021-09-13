@@ -3,6 +3,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
+--use ieee.numeric_std.all;
 
 entity uart_rx is
 port(
@@ -30,11 +31,38 @@ signal byte_counter : integer := 0;
 signal data_buffer : std_Logic_vector(7 downto 0);
 signal discard_bit : std_logic := '0';
 
+signal delay_clock : std_logic := '0';
 
+signal teste : std_logic_vector(7 downto 0);
 
-
+----- Sinais da fifo---------------
+signal fifo_clk : std_logic := '0';
+signal wr_en, rd_en : std_logic := '0';
+signal sts_error, sts_full, sts_high, sts_low, sts_empty :std_logic;
+signal wr_data : std_logic_vector(7 downto 0);
+signal rd_data : std_logic_vector(7 downto 0);
+signal fifo_counter : integer := 0;
+-----------------------------------
 
 begin
+
+fifo: entity work.fifo_async port map(
+		wr_clk => fifo_clk,
+		rd_clk => fifo_clk,
+		rst => reset_in,
+		wr_en => wr_en,
+		rd_en => rd_en,
+		sts_error=>sts_error, 
+		sts_full=>sts_full, 
+		sts_high=>sts_high, 
+		sts_low=>sts_low, 
+		sts_empty=>sts_empty,
+		wr_data => wr_data,
+		rd_data => rd_data
+	);
+
+
+
 
 	divclk : process(clock_in,reset_in)
 	begin
@@ -59,6 +87,19 @@ begin
 		end if;
 	end process divclk;
 	
+	fifoclk : process(clock_in,reset_in)
+	begin
+		if reset_in = '1' then
+			fifo_counter <= 0;
+		elsif rising_edge(clock_in) then
+			fifo_counter <= fifo_counter + 1;
+			
+			if fifo_counter = 500 then
+				fifo_clk <= not fifo_clk;
+				fifo_counter <= 0;
+			end if;
+		end if;
+	end process fifoclk;
 
 
 	
@@ -98,6 +139,33 @@ begin
 		end if;
 	end process FSM;
 
+	
+--	fifo_read : process(fifo_clk, reset_in)
+--	begin
+--		if reset_in = '1' then
+--			wr_data <= (others => '0');
+--			rd_en <= '0';
+--			wr_en <= '0';
+--		--	data_buffer <= (others => '0');
+--		--	byte_counter <= 0;
+--		elsif rising_edge(fifo_clk) then
+--
+--			if byte_ready = '1' then
+--				wr_data <= data_buffer;
+--				wr_en <= '1';
+--			else
+--				wr_en <= '0';
+--			end if;
+--			
+--			if sts_empty = '0' then
+--				rd_en <= '1';
+--			else
+--				rd_en <= '0';
+--			end if;
+--			
+--		end if;
+--	end process fifo_read;
+
 
 	read_process : process(new_clk, reset_in)
 	begin
@@ -105,8 +173,7 @@ begin
 			data_buffer <= (others => '0');
 			byte_counter <= 0;
 			discard_bit <= '1';
-		--	byte_ready <= '0';
-		--	data_p_en_out <= '0';
+			delay_clock <= '0';
 		elsif rising_edge(new_clk) then
 		
 			if state = receive then
@@ -115,17 +182,14 @@ begin
 					discard_bit <= '0';
 				else
 					if byte_counter < 8 then
-					--	if discard_bit /= '1' then
-							data_buffer(byte_counter) <= uart_data_rx;
-							byte_counter <= byte_counter + 1;
-					--	end if;
-					--	data_p_en_out <= '0';
-					--	byte_ready <= '0';
+						data_buffer(byte_counter) <= uart_data_rx;
+						byte_counter <= byte_counter + 1;
+						
+						
 						
 					else
 						byte_counter <= 0;
-					--	data_p_en_out <= '1';
-					--	byte_ready <= '1';
+						
 					end if;
 				end if;
 			end if;
@@ -137,7 +201,11 @@ begin
 		if reset_in = '1' then
 			byte_ready <= '0';
 			data_p_en_out <= '0';
+			wr_data <= (others => '0');
+			rd_en <= '0';
+			wr_en <= '0';
 		elsif rising_edge(clock_in) then
+			
 			
 			
 			
@@ -148,6 +216,24 @@ begin
 				data_p_en_out <= '1';
 				byte_ready <= '1';
 			end if;
+			
+			if byte_ready = '1' then
+				wr_data <= data_buffer;
+				wr_en <= '1';
+			else
+				wr_en <= '0';
+			end if;
+			
+			
+						
+			if sts_empty = '0' then
+				rd_en <= '1';
+				
+			else
+				rd_en <= '0';
+			end if;
+			
+			
 		end if;
 	end process control_process;
 			
@@ -158,7 +244,7 @@ begin
 			data_p_out <= (others => '0');
 		elsif rising_edge(clock_in) then
 			if byte_ready = '1' then
-				data_p_out <= data_buffer;
+				data_p_out <= rd_data;
 			end if;
 		end if;
 	end process output_process;

@@ -1,4 +1,5 @@
 vlib work
+vcom ./fifo_async.vhd
 vcom ./uart_rx.vhd
 vcom ./uart_rx_tb.vhd
 vsim -novopt -wlf /sim/t1 -wlfdeleteonquit work.uart_rx_tb

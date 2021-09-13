@@ -14,8 +14,17 @@ add wave -noupdate -radix decimal /uart_rx_tb/uart/byte_counter
 add wave -noupdate /uart_rx_tb/uart/state
 add wave -noupdate /uart_rx_tb/uart/next_state
 add wave -noupdate /uart_rx_tb/uart/discard_bit
+add wave -noupdate /uart_rx_tb/uart/fifo/wr_en
+add wave -noupdate /uart_rx_tb/uart/fifo/rd_en
+add wave -noupdate /uart_rx_tb/uart/fifo/sts_empty
+add wave -noupdate -radix hexadecimal /uart_rx_tb/uart/fifo/wr_data
+add wave -noupdate -radix hexadecimal /uart_rx_tb/uart/fifo/rd_data
+add wave -noupdate -radix binary /uart_rx_tb/uart/fifo/mem
+add wave -noupdate /uart_rx_tb/uart/fifo/sts_error
+add wave -noupdate /uart_rx_tb/uart/teste
+add wave -noupdate /uart_rx_tb/uart/fifo/rd_clk
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {123100 ns} 0}
+WaveRestoreCursors {{Cursor 1} {175053 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 208
 configure wave -valuecolwidth 100
@@ -31,4 +40,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {100251 ns} {205566 ns}
+WaveRestoreZoom {0 ns} {1050315 ns}
