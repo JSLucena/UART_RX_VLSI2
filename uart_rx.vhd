@@ -21,6 +21,7 @@ architecture uart_rx of uart_rx is
 signal new_clk : std_logic := '0';
 signal counter : integer := 0;
 
+signal data_p_en_out_in :std_logic := '0';
 
 type FSM_States is (idle, start_recv,receive, output);
 signal state, next_state : FSM_states := idle;
@@ -173,7 +174,7 @@ fifo: entity work.fifo_async port map(
 			data_buffer <= (others => '0');
 			byte_counter <= 0;
 			discard_bit <= '1';
-			delay_clock <= '0';
+			--delay_clock <= '0';
 		elsif rising_edge(new_clk) then
 		
 			if state = receive then
@@ -192,15 +193,44 @@ fifo: entity work.fifo_async port map(
 						
 					end if;
 				end if;
+			
 			end if;
 		end if;
 	end process read_process;
+	
+	
+	en_out : process(fifo_clk, reset_in)
+	begin
+		if reset_in = '1' then
+			data_p_en_out <= '0';
+			data_p_en_out_in <= '0';
+		elsif rising_edge(fifo_clk) then
+			if byte_counter < 8 then
+				delay_clock <= '0';
+				--data_p_en_out <= '0';
+				--data_p_en_out_in <= '0';
+			else
+				delay_clock <= '1';
+				--data_p_en_out <= '1';
+				--data_p_en_out_in <= '1';
+			end if;
+			
+			if delay_clock = '1' then
+				data_p_en_out <= '1';
+				data_p_en_out_in <= '1';
+			else
+				data_p_en_out <= '0';
+				data_p_en_out_in <= '0';
+			end if;
+		end if;
+	end process en_out;
 	
 	control_process : process(clock_in, reset_in)
 	begin
 		if reset_in = '1' then
 			byte_ready <= '0';
-			data_p_en_out <= '0';
+		--	data_p_en_out <= '0';
+		--	data_p_en_out_in <= '0';
 			wr_data <= (others => '0');
 			rd_en <= '0';
 			wr_en <= '0';
@@ -210,10 +240,12 @@ fifo: entity work.fifo_async port map(
 			
 			
 			if byte_counter < 8 then
-				data_p_en_out <= '0';
+			--	data_p_en_out <= '0';
+			--	data_p_en_out_in <= '0';
 				byte_ready <= '0';
 			else
-				data_p_en_out <= '1';
+			--	data_p_en_out <= '1';
+			--	data_p_en_out_in <= '1';
 				byte_ready <= '1';
 			end if;
 			
@@ -237,13 +269,17 @@ fifo: entity work.fifo_async port map(
 		end if;
 	end process control_process;
 			
+			
+			
+	
+			
 	output_process : process(clock_in, reset_in)
 	begin
 		if reset_in = '1' then
 			
 			data_p_out <= (others => '0');
 		elsif rising_edge(clock_in) then
-			if byte_ready = '1' then
+			if data_p_en_out_in = '1' then
 				data_p_out <= rd_data;
 			end if;
 		end if;

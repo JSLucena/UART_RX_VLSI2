@@ -23,6 +23,7 @@ add wave -noupdate -radix binary /uart_rx_tb/uart/fifo/mem
 add wave -noupdate /uart_rx_tb/uart/fifo/sts_error
 add wave -noupdate /uart_rx_tb/uart/teste
 add wave -noupdate /uart_rx_tb/uart/fifo/rd_clk
+add wave -noupdate /uart_rx_tb/uart/delay_clock
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {175053 ns} 0}
 quietly wave cursor active 1
