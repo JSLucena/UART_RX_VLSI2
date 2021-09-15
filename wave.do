@@ -14,6 +14,7 @@ add wave -noupdate -radix decimal /uart_rx_tb/uart/byte_counter
 add wave -noupdate /uart_rx_tb/uart/state
 add wave -noupdate /uart_rx_tb/uart/next_state
 add wave -noupdate /uart_rx_tb/uart/discard_bit
+add wave -noupdate /uart_rx_tb/uart/has_written
 add wave -noupdate /uart_rx_tb/uart/fifo/wr_en
 add wave -noupdate /uart_rx_tb/uart/fifo/rd_en
 add wave -noupdate /uart_rx_tb/uart/fifo/sts_empty

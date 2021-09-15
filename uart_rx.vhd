@@ -193,7 +193,8 @@ fifo: entity work.fifo_async port map(
 						
 					end if;
 				end if;
-			
+			else
+				byte_counter <= 0;
 			end if;
 		end if;
 	end process read_process;
@@ -215,15 +216,21 @@ fifo: entity work.fifo_async port map(
 				--data_p_en_out_in <= '1';
 			end if;
 			
-			if delay_clock = '1' then
-				data_p_en_out <= '1';
-				data_p_en_out_in <= '1';
-			else
-				data_p_en_out <= '0';
-				data_p_en_out_in <= '0';
-			end if;
+			data_p_en_out_in <= delay_clock;
+			data_p_en_out <= data_p_en_out_in;
+			
 		end if;
 	end process en_out;
+	
+	
+	--fifo_control : process(fifo_clk, reset_in)
+	--begin
+	--	if reset_in = '1' then
+	--		rd_en <= '0';
+	--		wr_en <= '0';
+	--	elsif rising_edge(fifo_clk) then
+	--end process fifo_control;
+	
 	
 	control_process : process(clock_in, reset_in)
 	begin
